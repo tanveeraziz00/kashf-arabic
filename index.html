@@ -103,6 +103,7 @@ ul.plain{padding-left:20px;margin:6px 0}
 
 #fz{position:fixed;left:max(12px,env(safe-area-inset-left,0px));bottom:max(12px,env(safe-area-inset-bottom,0px));z-index:40;display:flex;gap:6px;align-items:center}
 #fz button{border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:999px;min-width:40px;padding:8px 12px;font-size:.95rem;box-shadow:0 2px 8px #0002;cursor:pointer}
+#fzt{position:fixed;left:max(12px,env(safe-area-inset-left,0px));bottom:calc(max(12px,env(safe-area-inset-bottom,0px)) + 52px);z-index:40;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:999px;padding:8px 12px;font-size:.95rem;box-shadow:0 2px 8px #0002;cursor:pointer}
 #flbtns{position:fixed;right:max(12px,env(safe-area-inset-right,0px));bottom:max(12px,env(safe-area-inset-bottom,0px));z-index:40;display:flex;gap:8px;align-items:center}
 #flbtns button{border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:999px;padding:8px 14px;font-size:.95rem;box-shadow:0 2px 8px #0002}
 #flbtns button.on{background:var(--warn);color:#fff;border-color:var(--warn)}
@@ -1607,6 +1608,15 @@ route();
 (function(){let z=100;try{z=+localStorage.getItem('kashfZoom')||100}catch(e){}
 const set=v=>{z=Math.max(70,Math.min(200,v));document.documentElement.style.fontSize=z+'%';try{localStorage.setItem('kashfZoom',z)}catch(e){}const r=document.getElementById('fzr');if(r)r.textContent=z+'%'};
 const b=document.createElement('div');b.id='fz';b.innerHTML='<button id="fzm" aria-label="Smaller text">A−</button><button id="fzr" aria-label="Reset text size">100%</button><button id="fzp" aria-label="Larger text">A+</button>';document.body.appendChild(b);
-fzm.onclick=()=>set(z-10);fzp.onclick=()=>set(z+10);fzr.onclick=()=>set(100);set(z)})();
+fzm.onclick=()=>set(z-10);fzp.onclick=()=>set(z+10);fzr.onclick=()=>set(100);set(z);
+/* ---- theme: Auto / Light / Dark ---- */
+let th='auto';try{th=localStorage.getItem('kashfTheme')||'auto'}catch(e){}
+const tb=document.createElement('button');tb.id='fzt';document.body.appendChild(tb);
+const meta=document.querySelector('meta[name="theme-color"]');
+const applyTh=()=>{const R=document.documentElement;if(th==='auto')R.removeAttribute('data-theme');else R.setAttribute('data-theme',th);
+ tb.textContent=th==='light'?'☀ Light':th==='dark'?'☾ Dark':'◐ Auto';tb.setAttribute('aria-label','Theme: '+th+' (tap to change)');
+ const dark=th==='dark'||(th==='auto'&&matchMedia('(prefers-color-scheme: dark)').matches);if(meta)meta.content=dark?'#0e1614':'#0f6b63'};
+tb.onclick=()=>{th=th==='auto'?'light':th==='light'?'dark':'auto';try{localStorage.setItem('kashfTheme',th)}catch(e){}applyTh()};
+applyTh();})();
 </script>
 <script>if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}))</script>

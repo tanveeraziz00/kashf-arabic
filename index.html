@@ -142,7 +142,7 @@ const buildLex=(lessons,extra)=>{
    addIsm(r[0],e);if(words.length>1)words.forEach(w=>addIsm(w,e,true));
    [r[1],r[2]].forEach(p=>{if(p){addIsm(p,e);const pw=p.split(/\s+/);if(pw.length>1)pw.forEach(w=>addIsm(w,e,true))}});
   });
-  (l.verbs||[]).forEach(v=>{[['active_participle','Doer of: '],['passive_participle','Receiver of: ']].forEach(([k,lab])=>{const p=v[k];if(p&&v.en){const e={sg:p,pl1:'',pl2:'',en:lab+v.en,lesson:l.lesson};addIsm(p,e,true)}});if(v.past&&v.en)fil.push({past:v.past,pres:v.present,imp:v.imperative,mas:v.masdar,part:v.particle||'',en:v.en,lesson:l.lesson,s:[sk(v.past),sk(v.present),sk(v.imperative)].concat(String(v.masdar).split('/').map(x=>sk(x)))})});
+  (l.verbs||[]).forEach(v=>{[['active_participle','Doer of: '],['passive_participle','Receiver of: ']].forEach(([k,lab])=>{const p=v[k];if(p&&v.en){const e={sg:p,pl1:'',pl2:'',en:lab+v.en,lesson:l.lesson};addIsm(p,e,true)}});if(v.past&&v.en)fil.push({past:v.past,pres:v.present,imp:v.imperative,mas:v.masdar,part:v.particle||'',ap:v.active_participle||'',pp:v.passive_participle||'',en:v.en,lesson:l.lesson,s:[sk(v.past),sk(v.present),sk(v.imperative)].concat(String(v.masdar).split('/').map(x=>sk(x)))})});
  });
  (extra.ism||[]).forEach(r=>{const e={sg:r[0],pl1:r[1]||'',pl2:r[2]||'',en:r[3],ai:true,proper:!!r[4]};if(r[4])proper.set(sk(r[0]),e);else addIsm(r[0],e);[r[1],r[2]].forEach(p=>{if(p&&!r[4])addIsm(p,e)})});
  (extra.fil||[]).forEach(v=>fil.push({past:v[0],pres:v[1],imp:v[2],mas:v[3],part:v[4]||'',en:v[5],ai:true,s:[sk(v[0]),sk(v[1]),sk(v[2]),sk(v[3])],alt:(v[6]||[])}));
@@ -1346,13 +1346,12 @@ document.addEventListener('click',e=>{
  FL.lw={word:word,shown:(r&&r.e?r.e.en:(r?r.kind:'no entry')),text:sent.slice(0,200)};
  document.querySelectorAll('.w.on').forEach(x=>x.classList.remove('on'));w.classList.add('on');
  const c=(x,cls)=>`<td class="ar sm${cls?' '+cls:''}">${x?esc(x):'—'}</td>`;
- const ex=`<td class="ar sm ex">${hl(sent,word)}</td>`;
  let h=`<div class="row" style="margin-bottom:8px"><b class="ar" style="font-size:1.6rem">${esc(word)}</b><button class="btn ghost" style="margin-left:auto" data-close>Close</button></div>`;
  if(r&&r.kind==='ism'){const e=r.e;
-  h+=`<div class="tw"><table><thead><tr><th>Meaning</th><th>Singular</th><th>Plural 1</th><th>Plural 2</th><th>Example</th></tr></thead><tbody><tr><td class="en2">${esc(e.en)}</td>${c(e.sg)}${c(e.pl1)}${c(e.pl2)}${ex}</tr></tbody></table></div>`;
+  h+=`<div class="tw"><table><thead><tr><th>Meaning</th><th>Singular</th><th>Plural 1</th><th>Plural 2</th></tr></thead><tbody><tr><td class="en2">${esc(e.en)}</td>${c(e.sg)}${c(e.pl1)}${c(e.pl2)}</tr></tbody></table></div>`;
   h+=e.ai?`<span class="badge w">AI-added entry, not from the course: please review</span>`:`<span class="badge">From the course${e.lesson?', Lesson '+e.lesson:''}</span>`;
  }else if(r&&r.kind==='fil'){const e=r.e;
-  h+=`<div class="tw"><table><thead><tr><th>Meaning</th><th>Maadi</th><th>Related Harf</th><th>Mudhari</th><th>Masdar</th><th>Amr</th><th>Example</th></tr></thead><tbody><tr><td class="en2">${esc(e.en)}</td>${c(e.past)}${c(e.part)}${c(e.pres)}${c(e.mas)}${c(e.imp)}${ex}</tr></tbody></table></div>`;
+  h+=`<div class="tw"><table><thead><tr><th>Meaning</th><th>Maadi</th><th>Related Harf</th><th>Mudhari</th><th>Masdar</th><th>Amr</th><th>Ism Faail</th><th>Ism Mafool</th></tr></thead><tbody><tr><td class="en2">${esc(e.en)}</td>${c(e.past)}${c(e.part)}${c(e.pres)}${c(e.mas)}${c(e.imp)}${c(e.ap)}${c(e.pp)}</tr></tbody></table></div>`;
   h+=e.ai?`<span class="badge w">AI-added entry, not from the course: please review</span>`:`<span class="badge">From the course${e.lesson?', Lesson '+e.lesson:''}</span>`;
  }else if(r&&r.kind==='part'){
   h+=`<div class="sub">A particle or pronoun, so it has no ism or fi'l table.</div>`;

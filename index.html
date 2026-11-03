@@ -1372,20 +1372,22 @@ function route(){
  const m=/^#l(\d+)$/.exec(location.hash);
  const lm=/^#lv([AB][12])$/.exec(location.hash);lvl=lm?lm[1]:null;
  if(m&&LB[m[1]]){cur=+m[1]} else cur=null;
+ gi=location.hash==='#grammar';const gm=/^#g(\d+)$/.exec(location.hash);gp=gm&&LB[gm[1]]&&LB[gm[1]].grammar?+gm[1]:null;
  render();window.scrollTo(0,0);
 }
 addEventListener('hashchange',route);
 
 function progress(n){const t=lessonCards(n).length;if(!t)return 0;let k=0;lessonCards(n).forEach(c=>{if(store.known[c.id])k++});return k/t}
 
-let lvl=null;
+let lvl=null,gi=false,gp=null;
 const LEVELS=[['A1','Beginner','Foundations: greetings, family, daily life'],['A2','Elementary','Past and present, grammar rules, short texts'],['B1','Intermediate','Longer texts and wider grammar'],['B2','Upper intermediate','Advanced reading and expression']];
 function picker(){
  const tot=L.reduce((a,l)=>a+lessonCards(l.lesson).length,0),kn=Object.keys(store.known).filter(k=>store.known[k]).length;
  app.innerHTML=`<header class="top"><button class="brand" onclick="location.hash=''">Kashf <span>Arabic</span></button><div class="meter">${kn} of ${tot} words known</div></header>
  <h1>Choose your level</h1><p class="lead">Pick a level to see its lessons. Answers are AI-generated and marked until you review them.</p>
  <div class="shelf">${LEVELS.map(([k,n,d])=>{const ls=L.filter(l=>l.level===k);const has=ls.length;return `<button class="lesson" ${has?`onclick="location.hash='lv${k}'"`:'disabled style="opacity:.55;cursor:default"'}><span class="n">Level ${k}</span><span class="t">${n}</span><span class="e">${has?`${ls.length} lessons (${ls[0].lesson}–${ls[ls.length-1].lesson}) · ${d}`:'Coming soon'}</span></button>`}).join('')}</div>
- <div class="card" style="margin-top:20px"><div class="row"><b class="disp">Mixed review</b><span class="sub">Vocabulary quiz across all lessons</span><button class="btn" style="margin-left:auto" onclick="startQuiz(0)">Start quiz</button></div></div>
+ <div class="card" style="margin-top:20px"><div class="row"><b class="disp">Grammar</b><span class="sub">All grammar topics in order, read on their own</span><button class="btn" style="margin-left:auto" onclick="location.hash='grammar'">Open</button></div></div>
+  <div class="card" style="margin-top:12px"><div class="row"><b class="disp">Mixed review</b><span class="sub">Vocabulary quiz across all lessons</span><button class="btn" style="margin-left:auto" onclick="startQuiz(0)">Start quiz</button></div></div>
  <p class="note">Content source: original course. Progress is saved in this browser only.</p>`;
 }
 function home(){
@@ -1395,7 +1397,8 @@ function home(){
  <button class="back" onclick="location.hash=''">← Levels</button><h1>Level ${lvl}</h1>
  <p class="lead">${L.filter(l=>l.level===lvl).length} lessons from your course: dialogues, vocabulary, verbs, grammar, and every Student Guide practice with an answer key. Answers are AI-generated and marked until you review them.</p>
  ${[lvl].map(lv=>`<div class="pg">Level ${lv}<small>Lessons ${L.filter(l=>l.level===lv)[0].lesson}–${L.filter(l=>l.level===lv).slice(-1)[0].lesson}</small></div><div class="shelf">${L.map((l,i)=>l.level!==lv?'':`<button class="lesson" onclick="location.hash='l${l.lesson}'"><span class="n">Lesson ${l.lesson}</span><span class="t">${esc(l.title_ar)}</span><span class="e">${esc(l.title_en)}</span><div class="bar"><i style="width:${Math.round(progress(l.lesson)*100)}%"></i></div><span class="sub">${lessonCards(l.lesson).length} words · ${l.practice.length} practices</span></button>`).join('')}</div>`).join('')}
- <div class="card" style="margin-top:20px"><div class="row"><b class="disp">Mixed review</b><span class="sub">Vocabulary quiz across all lessons</span><button class="btn" style="margin-left:auto" onclick="startQuiz(0)">Start quiz</button></div></div>
+ <div class="card" style="margin-top:20px"><div class="row"><b class="disp">Grammar</b><span class="sub">All grammar topics in order, read on their own</span><button class="btn" style="margin-left:auto" onclick="location.hash='grammar'">Open</button></div></div>
+  <div class="card" style="margin-top:12px"><div class="row"><b class="disp">Mixed review</b><span class="sub">Vocabulary quiz across all lessons</span><button class="btn" style="margin-left:auto" onclick="startQuiz(0)">Start quiz</button></div></div>
  <p class="note">Content source: original course. Progress is saved in this browser only.</p>`;
 }
 
@@ -1448,10 +1451,31 @@ function grammar(l,p){
   if(rows.length&&!Array.isArray(rows[0])){
    rows.forEach(r=>{h+=`<div class="card"><div class="ar">${esc(r.verb)}</div><div class="tw" style="margin:8px 0 0"><table><tbody><tr><td>Doer</td><td class="ar sm">${esc(r.active)}</td><td class="ar sm" style="white-space:normal">${esc(r.active_ex)}</td><td>${esc(r.active_en)}</td></tr><tr><td>Receiver</td><td class="ar sm">${esc(r.passive)}</td><td class="ar sm" style="white-space:normal">${esc(r.passive_ex)}</td><td>${esc(r.passive_en)}</td></tr></tbody></table></div></div>`});
   } else if(rows.length){
-   h+=`<div class="tw"><table>${x.columns?`<thead><tr>${x.columns.map(c=>`<th>${esc(c)}</th>`).join('')}</tr></thead>`:''}<tbody>${rows.map(r=>`<tr>${r.map(c=>`<td class="${isAr(c)?'ar sm':''}" ${isAr(c)?'style="white-space:normal"':''}>${esc(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+   h+=`<div class="tw"><table>${x.columns?`<thead><tr>${x.columns.map(c=>`<th>${esc(c)}</th>`).join('')}</tr></thead>`:''}<tbody>${rows.map(r=>`<tr>${r.map(c=>`<td class="${isAr(c)?'ar sm':''}" ${isAr(c)?'style="white-space:normal"':''}>${isAr(c)?aw(c):esc(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
   }
  });
  p.innerHTML=h;
+}
+
+
+/* ---------- grammar, read on its own ---------- */
+const gramList=()=>L.filter(l=>l.grammar&&(!Array.isArray(l.grammar)||l.grammar.length));
+const gramParts=l=>{const en=[],ar=[];[].concat(l.grammar).forEach(x=>{const t=x&&x.title;if(!t)return;const m=/^(.*?)\s*\(([^)]*[\u0600-\u06FF][^)]*)\)\s*$/.exec(t);if(m){en.push(m[1]);ar.push(m[2])}else en.push(t)});return {en:en.join(' · ')||('Lesson '+l.lesson+' grammar'),ar:ar.join(' · ')}};
+function gramIndex(){
+ const gl=gramList();
+ app.innerHTML=`<header class="top"><button class="brand" onclick="location.hash=''">Kashf <span>Arabic</span></button><div class="meter">${gl.length} grammar topics</div></header>
+ <button class="back" onclick="location.hash=''">← Levels</button><h1>Grammar</h1>
+ <p class="lead">Every grammar topic from the course, in lesson order. Tap one to read it on its own.</p>
+ ${LEVELS.map(([k])=>{const ls=gl.filter(l=>l.level===k);return ls.length?`<div class="pg">Level ${k}<small>${ls.length} topics</small></div><div class="shelf">${ls.map(l=>`<button class="lesson" onclick="location.hash='g${l.lesson}'"><span class="n">Lesson ${l.lesson}</span><span class="t">${esc(gramParts(l).en)}</span>${gramParts(l).ar?`<span class="ar sm" style="display:block;font-size:1.25rem">${esc(gramParts(l).ar)}</span>`:''}</button>`).join('')}</div>`:''}).join('')}`;
+}
+function gramPage(){
+ const l=LB[gp],gl=gramList(),i=gl.findIndex(x=>x.lesson===gp),pv=gl[i-1],nx=gl[i+1];
+ app.innerHTML=`<header class="top"><button class="brand" onclick="location.hash=''">Kashf <span>Arabic</span></button><div class="meter">Grammar ${i+1} of ${gl.length}</div></header>
+ <button class="back" onclick="location.hash='grammar'">← Grammar index</button>
+ <div class="lead" style="margin:0;direction:ltr">Lesson ${l.lesson} · ${esc(l.title_en)}</div>
+ <div id="pane"></div>
+ <div class="row" style="margin-top:20px;gap:8px;flex-wrap:wrap">${pv?`<button class="btn ghost" onclick="location.hash='g${pv.lesson}'">← Previous</button>`:''}<button class="btn ghost" onclick="location.hash='l${l.lesson}'">Open lesson ${l.lesson}</button>${nx?`<button class="btn" style="margin-left:auto" onclick="location.hash='g${nx.lesson}'">Next →</button>`:''}</div>`;
+ grammar(l,$('#pane'));
 }
 
 /* ---------- practice ---------- */
@@ -1558,7 +1582,7 @@ function startQuiz(n,pane){
  ask();
 }
 
-function render(){ if(cur)lesson();else{const m=location.hash;home()} }
+function render(){ if(cur)lesson();else if(gp)gramPage();else if(gi)gramIndex();else{const m=location.hash;home()} }
 
 /* ---- flags: saved in the artifact's db when available, else on this device ---- */
 const FL={db:null,remote:[],mode:false,lw:null};
